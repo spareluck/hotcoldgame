@@ -62,8 +62,6 @@ $(document).ready(function() {
     $('#guessList li:last-child').each(function() {
       userGuessArray.push($(this).text());
     });
-
-    console.log(userGuessArray);
   }
 
   function makeGuessFun() {
@@ -79,31 +77,47 @@ $(document).ready(function() {
     	
     if(userGuess === '') {
 			hint('Please make a guess!');
-      setTimeout(makeGuessFun,2000);
+      setTimeout(makeGuessFun, 2000);
 		}
-    else if(userGuess > 100) {
-      hint("Please enter a number between 1-100");
-      setTimeout(makeGuessFun,2000);
-
+    else if(isNaN(userGuess)) {
+      hint("That's not a number!");
+      setTimeout(makeGuessFun, 2000);
     }
-		else if(isNaN(userGuess)) {
-			hint("That's not a number!");
-			setTimeout(makeGuessFun,2000);
-		}
+    else if(userGuess == 0 || userGuess > 100) {
+      hint("Please enter a number between 1-100");
+      setTimeout(makeGuessFun, 2000);
+    }
 		else {
-			return userGuess = Math.floor(userGuess);
+			 userGuess = Math.floor(userGuess);
+       return true;
 		}
+    return false;
 	}
 
   function duplicateGuess() {
-    var userGuessArrayTest = userGuessArray.slice();
-    var lastGuess = userGuessArrayTest.splice(-1,1);
-    userGuessArrayTest.push(lastGuess);
+    var lastGuess = userGuessArray.splice(-1,1);
+    userGuessArray.push(lastGuess);
 
-    for (var i = 0; i < (userGuessArrayTest.length - 1); i++) {
-      if(parseInt(lastGuess) === parseInt(userGuessArrayTest[i])){
+    for (var i = 0; i < (userGuessArray.length - 1); i++) {
+      if(parseInt(lastGuess) === parseInt(userGuessArray[i])) {
+        $('#guessList li:last-child').css("background-color", "#777");
+        $(".hotOrCold").text("You already guessed that number!").css({
+          display: "block",
+          backgroundColor: "#cc324b",
+          fontSize: "1.25em",
+          padding: "1em 0.4em"
+        });
+        $('#feedback').css("display", "none");
+
+        // Have message and color disappear 
+        setTimeout(function () {
+          $(".hotOrCold").css("display", "none").text('');
+          $('#feedback').css("display", "block");
+          }, 2500);
+        count -= 1;
+        guessCount();
         return true;
-      } 
+      }
     }
     return false;
   }
@@ -111,6 +125,42 @@ $(document).ready(function() {
   function firstGuess() {
       $('#guessList li:last-child').css("background-color", "#777");
       hintBox();
+  }
+
+  // Display message when user guesses # correctly
+  function correctGuess() {
+    var correct = "You've guessed the correct number: ";
+    var guessNum = "Number of guesses: ";
+    
+    $(".appended").html("<p>" + correct + correctNum + "</p>" + "<p>" + guessNum + count + "</p>");
+
+    $(".appear").fadeIn(1000);
+     $(".appear").delay(5000).fadeOut(1000);
+  } 
+
+   // Use calculated difference to give appropriate hint 
+  function hintBox() {
+    if(lastGuessDif >= 50) {
+      hint("Ice Cold: More than 50 numbers off");
+    }
+    else if(lastGuessDif >= 30 && lastGuessDif <= 49) {
+      hint("Cold: Between 30-49 numbers off");
+    }
+    else if(lastGuessDif >= 20 && lastGuessDif <= 29) {
+      hint("Warm: Between 20-29 numbers off");
+    }
+    else if(lastGuessDif >= 10 && lastGuessDif <= 19) {
+      hint("Hot: Between 10-19 numbers off");
+    }
+    else if(lastGuessDif >= 1 && lastGuessDif <= 9) {
+      hint("Smoking Hot: Only 1-9 numbers off!");
+    }
+    else if (userGuess == correctNum){
+      correctGuess();
+      newGame();
+      return false;
+    }
+    return false;
   }
   
 	// Compare guess number to correct number and give feedback
@@ -120,31 +170,11 @@ $(document).ready(function() {
 
     var isDuplicate = duplicateGuess();
 
-    if(userGuessArray.length == 1) {
-        firstGuess();
+    if(userGuessArray.length === 1) {
+      firstGuess();
     }
 
-    if ( isDuplicate == true || lastGuessDif == lastGuessDif2 ) {
-      $('#guessList li:last-child').css("background-color", "#777");
-      $(".hotOrCold").text("You already guessed that number!").css({
-        display: "block",
-        backgroundColor: "#cc324b",
-        fontSize: "1.25em",
-        padding: "1em 0.4em"
-      });
-      $('#feedback').css("display", "none");
-
-      // Have message and color disappear 
-      setTimeout(function () {
-        $(".hotOrCold").css("display", "none").text('');
-        $('#feedback').css("display", "block");
-        }, 2500);
-      count -= 1;
-      guessCount();
-      return false;
-    }
-
-		if(userGuessArray.length > 1 && lastGuessDif !== 0) {
+		if(userGuessArray.length > 1 && lastGuessDif !== 0 && isDuplicate === false) {
 		
       if (lastGuessDif < lastGuessDif2) { 
   			
@@ -188,35 +218,11 @@ $(document).ready(function() {
     }
   }
 
-  // Use calculated difference to give appropriate hint 
-  function hintBox() {
-  	if(lastGuessDif >= 50) {
-  		hint("Ice Cold: More than 50 numbers off");
-  	}
-  	else if(lastGuessDif >= 30 && lastGuessDif <= 49) {
-  		hint("Cold: Between 30-49 numbers off");
-  	}
-  	else if(lastGuessDif >= 20 && lastGuessDif <= 29) {
-  		hint("Warm: Between 20-29 numbers off");
-  	}
-  	else if(lastGuessDif >= 10 && lastGuessDif <= 19) {
-  		hint("Hot: Between 10-19 numbers off");
-  	}
-  	else if(lastGuessDif >= 1 && lastGuessDif <= 9) {
-  		hint("Smoking Hot: Only 1-9 numbers off!");
-  	}
-  	else if (userGuess == correctNum){
-  		correctGuess();
-  		newGame();
-  		return false;
-  	}
-  	return false;
-  }
-	
 	function guess() {
-		
-  	if(correctInput()) {
-  		
+			
+    var okInput = correctInput();
+
+    if(okInput === true) {
       userGuessList();
 
       count++
@@ -225,20 +231,9 @@ $(document).ready(function() {
   		hotOrCold();
 
   		userGuessReset();
-  		return false;
-  	}
+    }
+    return false;
   }
-
-	// Display message when user guesses # correctly
-	function correctGuess() {
-		var correct = "You've guessed the correct number: ";
-		var guessNum = "Number of guesses: ";
-		
-		$(".appended").html("<p>" + correct + correctNum + "</p>" + "<p>" + guessNum + count + "</p>");
-
-		$(".appear").fadeIn(1000);
-	   $(".appear").delay(5000).fadeOut(1000);
-  }	
 
 	// Blink congrats when user wins
 	function blinker() {
