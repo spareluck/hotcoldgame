@@ -7,19 +7,6 @@ $(document).ready(function() {
 	var makeGuess;
   var winnerMsg;
 	var lastGuessDif;
-	
-  newGame();
-
-  // Reset game without refreshing page
-  function newGame() {
-    randomNumber();
-    userGuessReset();
-    $('#guessList li').remove();
-    userGuessArray = []; 
-    count = 0;
-    guessCount();
-    hint("Make your Guess!");
-  }
 
   // Random Number Generator
   function randomNumber () {
@@ -59,9 +46,9 @@ $(document).ready(function() {
   function userGuessList() {
     $('#guessList').append("<li>" + userGuess + "</li>");
 
-    $('#guessList li:last-child').each(function() {
-      userGuessArray.push($(this).text());
-    });
+    // JS html escape function
+
+    userGuessArray.push(userGuess);
   }
 
   function makeGuessFun() {
@@ -70,7 +57,9 @@ $(document).ready(function() {
     return false;
   }
 
-// Make sure the guess is correct input
+  // put setTimeout inside function above.
+
+  // Make sure the guess is correct input
 
 	function correctInput() {
 		userGuess = $("#userGuess").val();
@@ -88,18 +77,17 @@ $(document).ready(function() {
       setTimeout(makeGuessFun, 2000);
     }
 		else {
-			 userGuess = Math.floor(userGuess);
        return true;
 		}
     return false;
 	}
 
   function duplicateGuess() {
-    var lastGuess = userGuessArray.splice(-1,1);
-    userGuessArray.push(lastGuess);
+    var indexOfLast = userGuessArray.length - 1;
+    var lastGuess = userGuessArray[indexOfLast];
+    var firstIndexOfLastGuess = userGuessArray.indexOf(lastGuess);
 
-    for (var i = 0; i < (userGuessArray.length - 1); i++) {
-      if(parseInt(lastGuess) === parseInt(userGuessArray[i])) {
+    if(firstIndexOfLastGuess != indexOfLast){
         $('#guessList li:last-child').css("background-color", "#777");
         $(".hotOrCold").text("You already guessed that number!").css({
           display: "block",
@@ -118,7 +106,6 @@ $(document).ready(function() {
         guessCount();
         return true;
       }
-    }
     return false;
   }
   
@@ -222,6 +209,9 @@ $(document).ready(function() {
 			
     var okInput = correctInput();
 
+    // look up if math floor changes to number
+    userGuess = Math.floor(userGuess);
+    
     if(okInput === true) {
       userGuessList();
 
@@ -232,7 +222,25 @@ $(document).ready(function() {
 
   		userGuessReset();
     }
-    return false;
+  }
+
+
+  // Reset game without refreshing page
+  function newGame() {
+    randomNumber();
+    userGuessReset();
+    $('#guessList li').remove();
+    userGuessArray = []; 
+    count = 0;
+    guessCount();
+    hint("Make your Guess!");
+  }
+
+  function instead(callback) {
+    return function() {
+      callback();
+      return false;
+    }
   }
 
 	// Blink congrats when user wins
@@ -242,8 +250,10 @@ $(document).ready(function() {
 	}	
 	setInterval(blinker, 1000); //Runs every second
   	
+  newGame();
+
   // Functionality of guess button
-  $('#guessButton').on('click', guess);
+  $('#guessButton').on('click', instead(guess));
 
   // Function to Click on New Game button class = new
   $('li .new').on('click', newGame);
