@@ -224,7 +224,6 @@ $(document).ready(function() {
     }
   }
 
-
   // Reset game without refreshing page
   function newGame() {
     randomNumber();
